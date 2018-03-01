@@ -6,7 +6,7 @@ Course Project for CSCI3280
 ## Description
 ---
 ## Language
-*Java
+1. Java
 ---
 ### Function 1
 Decode wave file (.wav), and play it back.
