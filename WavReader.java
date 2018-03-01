@@ -1,6 +1,6 @@
 /**
  * Created and edited by Spike;
- * @author WANG Yuxuan
+ * @author Spike WANG
  * For course CSCI 3280;
  * Date: 2018/3/1
  */
