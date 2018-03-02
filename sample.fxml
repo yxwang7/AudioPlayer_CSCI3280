@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+   <children>
+      <Label layoutX="60.0" layoutY="47.0" text="Input the location of the music" textFill="#000000b1">
+         <font>
+            <Font name="Avenir Light" size="18.0" />
+         </font>
+      </Label>
+      <TextField id="location" fx:id="Location" layoutX="60.0" layoutY="95.0" prefHeight="27.0" prefWidth="244.0" />
+      <Button id="play" fx:id="Play" layoutX="60.0" layoutY="173.0" mnemonicParsing="false" onAction="#playAudio" text="Play" textFill="#000000ab" />
+   </children>
+</AnchorPane>
