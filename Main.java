@@ -1,4 +1,4 @@
-package sample;
+package audioplayer;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -10,12 +10,11 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("playerPanel.fxml"));
         primaryStage.setTitle("Test audio player");
         primaryStage.setScene(new Scene(root, 600, 400));
         primaryStage.show();
     }
-
 
     public static void main(String[] args) {
         launch(args);

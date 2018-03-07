@@ -1,7 +1,7 @@
-package sample; /**
+package audioplayer; /**
  * Created and edited by Spike;
  * @author Spike WANG
- * For course CSCI 3280;
+ * For course project of CSCI 3280: Introduction to multimedia system;
  * Date: 2018/3/1
  */
 import java.io.FileInputStream;
@@ -15,22 +15,31 @@ public class WavReader {
     String filePath;
     infoPair[] info;
     infoPair[] extendInfo;
-    FileInputStream audio;
-    
+    int dataLength;
+    int headSize;
+    AudioFormat fmt;
+
     class infoPair{
         String name;
         String value;
         String type;
     }
-    
+
+    AudioFormat getFormat(){
+        int bitDepth = Integer.parseInt(info[10].value);
+        boolean signed = bitDepth > 8;
+        AudioFormat af = new AudioFormat(
+                Integer.parseInt(info[7].value),
+                Integer.parseInt(info[10].value),
+                Integer.parseInt(info[6].value),
+                signed, false);
+        return af;
+    }
+
     public WavReader(String path){
         filePath = path;
-        try{
-            audio = new FileInputStream(path);
-        }
-        catch(FileNotFoundException e){
-            System.out.println("Audio file not found!");
-        }   
+        read();
+        fmt = getFormat();
     }
 
     private byte[] endConvert(byte[] info){
@@ -40,7 +49,6 @@ public class WavReader {
         return result;
     }
 
-    //API
     public infoPair[] audioInfo(){
         if(info == null){
             System.out.println("No audio has been read!");
@@ -49,10 +57,11 @@ public class WavReader {
         else
             return info;
     }
-    
+
     void read(){
-        if(audio == null)   System.out.println("There is no audio file!");
-        else{
+        try{
+            FileInputStream audio = new FileInputStream(filePath);
+            headSize = 0;
             info  = new infoPair[13];
             for(int i = 0; i < 13; i++) info[i] = new infoPair();
             info[0].name = "ChunkID";
@@ -76,6 +85,7 @@ public class WavReader {
                     if(i != 11)
                     {
                         byte[] store = new byte[length[i]];
+                        headSize += length[i];
                         audio.read(store);
                         if(endian[i] == 1) store = endConvert(store);
                         switch(type[i]){
@@ -103,21 +113,24 @@ public class WavReader {
                     else{
                         byte[] extSize = new byte[2];
                         audio.read(extSize);
+                        headSize += 2;
                         byte[] store = new byte[4];
-                        
+
                         if(extSize[0] == 0 && extSize[1] == 0){
                             audio.read(store);
+                            headSize += 4;
                         }
                         else if(extSize[0] == 0 && extSize[1] == 16){
                             //audio.skip(22); audio.read(store);
                             extendInfo = new infoPair[3];
-                            extendInfo[0].name = "ValidBitPerSample"; extendInfo[0].type = "short"; 
-                            extendInfo[1].name = "dwChannelMask"; extendInfo[1].type = "int"; 
+                            extendInfo[0].name = "ValidBitPerSample"; extendInfo[0].type = "short";
+                            extendInfo[1].name = "dwChannelMask"; extendInfo[1].type = "int";
                             extendInfo[3].name = "subFormat"; extendInfo[2].type = "UUID";
                             int[] exSize = {2, 4, 16};
                             for(int j = 0; j < 3; j++){
                                 byte[] storeB = new byte[exSize[j]];
                                 audio.read(storeB);
+                                headSize += exSize[j];
                                 ByteBuffer buffer = ByteBuffer.wrap(storeB);
                                 switch(j)
                                 {
@@ -147,24 +160,28 @@ public class WavReader {
                         else{
                             store[0] = extSize[0]; store[1] = extSize[1];
                             audio.read(extSize);
+                            headSize += 2;
                             store[2] = extSize[0]; store[3] = extSize[1];
                         }
-                        
+
                         String target = new String(store);
                         while(!target.equals("data")){
                             //Read fact chunk here
                             byte[] chunkSize = new byte[4];
                             audio.read(chunkSize);
+                            headSize += 4;
                             chunkSize = endConvert(chunkSize);
                             int size = ByteBuffer.wrap(chunkSize).getInt();
                             audio.skip(size);
+                            headSize += size;
                             store = new byte[length[i]];
                             audio.read(store);
+                            headSize += 4;
                             target = new String(store);
                         }
-                        /*byte[] store = new byte[4];
-                        audio.read(store);
-                        String target = new String(store);*/
+                    /*byte[] store = new byte[4];
+                    audio.read(store);
+                    String target = new String(store);*/
                         info[11].value = target;
                     }
                 }
@@ -172,42 +189,18 @@ public class WavReader {
                     System.out.println("Unexpexted of file end!");
                 }
             }
+            dataLength = Integer.parseInt(info[12].value);
+        }
+        catch(IOException e){//Handle
+            System.out.println("File is not found!");
         }
     }
-    
-    void playAudio(){
-        if(info == null) read();
-        int bitDepth = Integer.parseInt(info[10].value);
-        boolean signed = bitDepth > 8;
-        int dataLength = Integer.parseInt(info[12].value);
-        AudioFormat af = new AudioFormat(
-            Integer.parseInt(info[7].value), 
-            Integer.parseInt(info[10].value), 
-            Integer.parseInt(info[6].value),
-            signed, false);
-        DataLine.Info inf = new DataLine.Info(SourceDataLine.class, af, dataLength);
-        try {
-            SourceDataLine soundLine = (SourceDataLine) AudioSystem.getLine(inf);
-            soundLine.open(af);
-            byte[] data = new byte[dataLength];
-            audio.read(data);
-            soundLine.start();
-            soundLine.write(data, 0, data.length);
-            soundLine.close();
-        } catch (LineUnavailableException ex) {
-            System.out.println("The line is unavailable");
-        } catch (IOException ex) {
-            System.out.println("End of file!");
-        }
-    }
-    
+
     public static void main(String[] args) {
-        String filePath = "music.wav";
+        String filePath = "true_love.wav";
         WavReader reader = new WavReader(filePath);
-        reader.read();
         for(int i = 0; i < 13; i++){
             System.out.println(reader.info[i].name + ": " + reader.info[i].value);
         }
-        reader.playAudio();
     }
 }

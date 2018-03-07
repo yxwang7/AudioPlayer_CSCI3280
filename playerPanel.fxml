@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="audioplayer.Controller">
+   <children>
+      <Text id="title" fill="#00000078" layoutX="78.0" layoutY="72.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Find the beauty with music!">
+         <font>
+            <Font name="Chalkboard SE Regular" size="25.0" />
+         </font>
+      </Text>
+      <TextField id="loc" fx:id = "loc" layoutX="168.0" layoutY="100.0" prefHeight="27.0" prefWidth="264.0" />
+      <Button id="Play" fx:id = "play" layoutX="56.0" layoutY="100.0" mnemonicParsing="false" text="Play" />
+      <Slider id="volumeSlider" fx:id = "volumeSlider" layoutX="166.0" layoutY="228.0" />
+   </children>
+</AnchorPane>
