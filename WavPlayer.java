@@ -1,5 +1,7 @@
 package audioplayer;
 
+import javafx.scene.control.Slider;
+
 import javax.sound.sampled.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -7,26 +9,44 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class WavPlayer {
-    static WavReader head;
-    static SourceDataLine audioLine;
-    static Object playLock;
-    static boolean playState;
-    public static FloatControl volume;
-    static boolean volumeFlag;
+    WavReader head;
+    SourceDataLine audioLine;
+    Object playLock;
+    boolean playState;
+    FloatControl volume;
+    boolean volumeFlag;
+    public playTime restTime;
+
+    class playTime{
+        public double time;
+        playTime(double time){
+            this.time = time;
+        }
+    }
+
+
+    public void stop(){
+        head = null;
+        audioLine.drain();
+        audioLine.stop();
+        playState = false;
+        volume = null;
+        volumeFlag = true;
+    }
 
     public WavPlayer(String location){
         head = new WavReader(location);
         volume = null;
+        restTime = new playTime(-1);
     }
 
-    public static void reloadAudio(String newLocation){
+    public void reloadAudio(String newLocation){
         head = new WavReader(newLocation);
-        playLock = null;
         volume = null;
     }
 
     static AudioInputStream getAudioStream(String path,
-                                           AudioFormat fmt, int length){
+                                           AudioFormat fmt, long length){
         try{
             FileInputStream fis = new FileInputStream(path);
             return new AudioInputStream(fis, fmt, length);
@@ -37,13 +57,17 @@ public class WavPlayer {
         return null;
     }
 
-    static void initialDataLine(){
-        DataLine.Info inf = new DataLine.Info(SourceDataLine.class, head.fmt, head.dataLength);
+    void initialDataLine(){
+        DataLine.Info inf = new DataLine.Info(SourceDataLine.class, head.fmt, (int)head.dataLength);
         try{
             audioLine = (SourceDataLine) AudioSystem.getLine(inf);
             audioLine.open(head.fmt);
             volume = (FloatControl) audioLine.getControl(FloatControl.Type.MASTER_GAIN);
             volumeFlag = false;
+            synchronized(restTime){
+                if(restTime.time == -1)
+                    restTime.time = head.getAudioTime(head.dataLength);
+            }
         }
         catch(LineUnavailableException e){
             //Handling exception with unavailable line
@@ -51,7 +75,7 @@ public class WavPlayer {
         }
     }
 
-    static void closeDataLine(){
+    void closeDataLine(){
         if(audioLine != null)
         {
             audioLine.drain();
@@ -59,17 +83,21 @@ public class WavPlayer {
         }
     }
 
-     static class playAudio implements Runnable{
+    public playAudio getPlayAudio(){
+        return new playAudio();
+    }
+
+    class playAudio implements Runnable{
         AudioInputStream ais;
         int bufferSize;
 
         public playAudio(){
             this.ais = getAudioStream(head.filePath,
                     head.fmt, head.dataLength);
-            this.bufferSize = 128;
+            this.bufferSize = 44100;
         }
 
-        public playAudio(AudioInputStream ais, int bufferSize){
+        public playAudio(AudioInputStream ais, int bufferSize, Slider bar){
             this.ais = ais;
             this.bufferSize = bufferSize;
         }
@@ -79,15 +107,25 @@ public class WavPlayer {
             playLock = new Object();
             synchronized (playLock){
                 playState = true;
+                int currentSize = head.dataLength;
+                synchronized (restTime){
+                    restTime.time = head.getAudioTime(currentSize);
+                }
                 audioLine.start();
                 byte[] data = new byte[bufferSize];
+
                 try{
-                    while(ais.read(data) != -1)
+                    int dataRead;
+                    while((dataRead = ais.read(data)) != -1)
                     {
+                        synchronized (restTime){
+                            restTime.time -= head.getAudioTime(dataRead);
+                        }
                         while(!playState) playLock.wait();
                         audioLine.write(data, 0, data.length);
                     }
                 }
+
                 catch(IOException e){
 
                 } catch (InterruptedException e) {
@@ -98,10 +136,23 @@ public class WavPlayer {
         }
     }
 
-    static synchronized void checkPlayState(String s){//test code, to be modified after release of GUI
+    /*synchronized void checkPlayState(String s){//test code, to be modified after release of GUI
         if(s.equals("p")){
             playState = false;
         } else if(s.equals("r")){
+            playState = true;
+            synchronized (playLock) {
+                playLock.notify();
+            }
+        }
+    }*/
+
+    synchronized void pause(){
+        if(playState) playState = false;
+    }
+
+    synchronized void resume(){
+        if(!playState){
             playState = true;
             synchronized (playLock) {
                 playLock.notify();
@@ -120,11 +171,13 @@ public class WavPlayer {
         String loc = "true_love.wav";
         WavPlayer wp = new WavPlayer(loc);
         wp.initialDataLine();
-        Thread play = new Thread(new WavPlayer.playAudio());
+        System.out.println("Max: " + wp.volume.getMaximum());
+        System.out.println("Min: " + wp.volume.getMinimum());
+        /*Thread play = new Thread(new WavPlayer.playAudio());
         play.start();
         while(play.isAlive()){
             float vol = sc.nextFloat();
-            wp.changeVolume(vol);
-        }
+            wp.changeVolume(vol);*/
+        //}
     }
 }

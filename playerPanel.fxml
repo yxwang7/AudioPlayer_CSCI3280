@@ -7,7 +7,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="audioplayer.Controller">
    <children>
       <Text id="title" fill="#00000078" layoutX="78.0" layoutY="72.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Find the beauty with music!">
@@ -15,8 +14,21 @@
             <Font name="Chalkboard SE Regular" size="25.0" />
          </font>
       </Text>
-      <TextField id="loc" fx:id = "loc" layoutX="168.0" layoutY="100.0" prefHeight="27.0" prefWidth="264.0" />
-      <Button id="Play" fx:id = "play" layoutX="56.0" layoutY="100.0" mnemonicParsing="false" text="Play" />
-      <Slider id="volumeSlider" fx:id = "volumeSlider" layoutX="166.0" layoutY="228.0" />
+      <TextField id="loc" fx:id="loc" layoutX="117.0" layoutY="100.0" prefHeight="27.0" prefWidth="297.0" />
+      <Button id="Play" fx:id="play" layoutX="56.0" layoutY="100.0" mnemonicParsing="false" text="Play" />
+      <Slider id="volumeSlider" fx:id="volumeSlider" layoutX="544.0" layoutY="231.0" orientation="VERTICAL" />
+      <Slider id="progressBar" fx:id="progressSlider" layoutX="100.0" layoutY="337.0" prefHeight="16.0" prefWidth="297.0" />
+      <Text fill="#00000078" layoutX="529.0" layoutY="216.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Volume">
+         <font>
+            <Font name="Chalkboard SE Regular" size="14.0" />
+         </font>
+      </Text>
+      <Text fill="#00000097" layoutX="42.0" layoutY="350.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Progress">
+         <font>
+            <Font name="Chalkboard" size="13.0" />
+         </font>
+      </Text>
+      <Button id="Pause" fx:id="pause" layoutX="100.0" layoutY="288.0" mnemonicParsing="false" text="Pause" textFill="#000000c2" />
+      <Button id="Stop" fx:id="stop" layoutX="189.0" layoutY="288.0" mnemonicParsing="false" text="Stop" textFill="#000000ad" />
    </children>
 </AnchorPane>

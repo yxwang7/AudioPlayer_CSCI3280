@@ -5,7 +5,6 @@ package audioplayer; /**
  * Date: 2018/3/1
  */
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
@@ -194,6 +193,12 @@ public class WavReader {
         catch(IOException e){//Handle
             System.out.println("File is not found!");
         }
+    }
+
+    public double getAudioTime(long restDataLength){
+        if(info != null)
+            return 1.0 * restDataLength * 8 /(1.0 * Integer.parseInt(info[7].value)) / (1.0 * Integer.parseInt(info[6].value) * Integer.parseInt(info[10].value));
+        else return -1;
     }
 
     public static void main(String[] args) {
